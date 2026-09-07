@@ -225,6 +225,45 @@ try {
       window.__learn.vp.setExplode(0.4);
     });
 
+    // The underside. This is the shot that proves the pitch clamp allows it:
+    // the reversed-seal and chip-under-the-housing defects are only visible
+    // from below, so a camera that cannot get there makes the module's own
+    // failure modes unteachable.
+    await page.evaluate(() => {
+      window.__learn.vp.setExplode(0.5);
+      window.__learn.vp.setView(0.5, -1.15);
+    });
+    await sleep(700);
+    const underBox = await page.evaluate(() => {
+      const r = document.querySelector('.canvas-wrap').getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: r.height };
+    });
+    await page.screenshot({ path: join(SHOTS, `${backend}-underside.png`), clip: underBox });
+
+    const pitch = await page.evaluate(() => window.__learn.vp.pitch());
+    if (!(pitch < -1)) fail(`pitch clamped at ${pitch.toFixed(2)} — cannot inspect the underside`);
+    else console.log(`  ok    underside reachable (pitch ${pitch.toFixed(2)} rad)`);
+
+    // Grab a part, move it, and put it back — the whole point being that a
+    // trainee can take a piece out of the stack and return it to order.
+    await page.evaluate(() => window.__learn.vp.setView(0.6, 0.3));
+    await sleep(500);
+    const cx = Math.round(underBox.x + underBox.width / 2);
+    const cy = Math.round(underBox.y + underBox.height / 2);
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx + 140, cy - 90, { steps: 12 });
+    const movedWhileHeld = await page.evaluate(() => window.__learn.vp.moved());
+    await page.mouse.up();
+    if (!movedWhileHeld) fail('dragging over the stack moved no part — the pick is not hitting');
+    else console.log('  ok    part grabbed and displaced');
+
+    await page.evaluate(() => window.__learn.vp.resetParts());
+    await sleep(1400);
+    const stillMoved = await page.evaluate(() => window.__learn.vp.moved());
+    if (stillMoved) fail('reset did not return every part to assembly order');
+    else console.log('  ok    reset restored assembly order');
+
     // Back to train, answer the check, so the feedback path is exercised too.
     await page.evaluate(() => {
       [...document.querySelectorAll('.nav button')].find((b) => b.textContent.includes('Train')).click();

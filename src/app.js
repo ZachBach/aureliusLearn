@@ -149,6 +149,15 @@ function buildStage() {
     },
   }, 'PAUSE');
 
+  // Always enabled rather than gated on "has anything moved": the reset eases
+  // over several frames, so a button that disabled itself the instant it was
+  // pressed would flicker back on while the parts were still travelling.
+  dom.resetBtn = el('button', {
+    class: 'ghost',
+    title: 'Return every part to assembly order',
+    onclick: () => vp && vp.resetParts(),
+  }, 'RESET');
+
   dom.timeline = el('div', { class: 'timeline' });
 
   return el('section', { class: 'stage' },
@@ -161,7 +170,9 @@ function buildStage() {
         el('span', { class: 'mono', text: 'EXPLODE' }),
         slider,
         dom.explodeOut,
-        dom.spinBtn)),
+        dom.spinBtn,
+        dom.resetBtn,
+        el('span', { class: 'hint mono', text: 'DRAG A PART · ORBIT · SCROLL' }))),
     dom.timeline);
 }
 

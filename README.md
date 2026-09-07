@@ -72,6 +72,25 @@ construction rather than by good intentions.
 | `lib/` | vendored geo-lib and tsl-lib, byte-identical |
 | `vendor/` | three.js r178, extracted from the Aurelius bundle |
 
+### Handling the parts
+
+Orbit runs very nearly pole to pole, and any part can be picked up, dragged
+out of the stack and put back with **Reset**. Both exist for one reason: the
+defects this trains for are underside defects. A reversed seal and a chip
+under a housing are invisible from above, so a camera held above the assembly
+makes the module's own failure modes unteachable — and a part sitting in a
+stack hides its own bottom face whatever the camera does.
+
+The rig carries a bounce light from below for the same reason. Lighting a
+scene only from above is the physically honest choice and it renders every
+surface the trainee needs to inspect as black; a workbench throws light back
+up, and so does this.
+
+Grab and orbit are mutually exclusive while a part is held — the pattern
+echoGalaxy uses when a planet is picked up, where the orbit controller is
+switched off for the duration rather than left fighting the drag for the same
+pointer.
+
 WebGPU with a WebGL2 fallback, both running the same TSL node materials —
 `WebGPURenderer({ forceWebGL: true })` compiles the same node graph to GLSL, so
 a machine without WebGPU loses speed and nothing else. The check gates on

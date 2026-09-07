@@ -278,6 +278,13 @@ button { font-family: inherit; color: inherit; }
   cursor: pointer;
 }
 .ghost:hover { border-color: #3a444b; color: var(--text); }
+.controls .hint {
+  color: var(--faint);
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 9px;
+}
+@media (max-width: 1200px) { .controls .hint { display: none; } }
 
 .timeline {
   display: flex; gap: 8px;
