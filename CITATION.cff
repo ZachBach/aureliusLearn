@@ -1,0 +1,53 @@
+# Citation metadata — GitHub renders this as "Cite this repository".
+#
+# The abstract deliberately carries the scope statement, the same way
+# PulseMask's does. Someone who encounters this work only as a citation, with
+# no access to the running app, still learns that its figures are a fixture
+# rather than a result. Keep that in any edit; it is the same guardrail the
+# interface itself carries on every view.
+cff-version: 1.2.0
+title: "Aurelius Learn: a browser-native assembly training runtime with procedural part geometry"
+message: "If you reference this work, please cite it as below."
+type: software
+version: 0.1.0
+date-released: 2026-09-07
+
+authors:
+  - given-names: Zachary
+    family-names: Auerbach
+    orcid: "https://orcid.org/0009-0001-3046-9104"
+    affiliation: "Aurelius Dynamic"
+    email: build@aureliusdynamic.com
+
+repository-code: "https://github.com/ZachBach/aureliusLearn"
+url: "https://aureliusdynamic.com/learn/"
+license: MIT
+
+keywords:
+  - assembly training
+  - procedural geometry
+  - webgpu
+  - three.js
+  - tsl
+
+abstract: >-
+  A browser-native training runtime that steps an assembly procedure one
+  operation at a time beside a live exploded view of the component each step
+  describes, with knowledge checks posed against that same geometry. Every
+  part is generated as a turned profile — bores, lead-in chamfers, a relief
+  groove, a knurled cap — revolved procedurally rather than modelled, so a
+  feature the training text depends upon, such as a seal ring's single
+  chamfered face, exists as geometry that catches a real highlight. Rendering
+  uses WebGPU with TSL node materials and falls back to WebGL2 through the
+  same node graph. The application makes no external network requests at
+  runtime; fonts and the three.js build are served from the repository and a
+  headless check fails the build on any off-origin request.
+
+  Scope, stated as part of the record: the module content is a FIXTURE. There
+  is no customer, no production line and no measured outcome anywhere in this
+  work. The readiness figures, operator roster and module library are
+  invented, and where a delta is shown it compares two points within that
+  invented series rather than reporting an effect. The authoring pipeline
+  presented in the interface is a storyboard on a timer: no document, image or
+  CAD body is parsed, matched or tessellated. No claim is made or implied
+  about training effectiveness, defect reduction or time to competence.

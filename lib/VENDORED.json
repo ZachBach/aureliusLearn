@@ -1,0 +1,41 @@
+{
+  "source": "ZachBach/AureliusDynamic",
+  "vendored": "2026-09-07",
+  "files": {
+    "lib/geo/core/loft.js": {
+      "from": "geo-lib/src/core/loft.js",
+      "sha256": "6f3861213de6d9bb",
+      "bytes": 6673
+    },
+    "lib/geo/core/merge.js": {
+      "from": "geo-lib/src/core/merge.js",
+      "sha256": "cbf75c46860624b8",
+      "bytes": 3752
+    },
+    "lib/geo/core/assembly.js": {
+      "from": "geo-lib/src/core/assembly.js",
+      "sha256": "04325a89f15317f2",
+      "bytes": 3802
+    },
+    "lib/geo/solid/revolve.js": {
+      "from": "geo-lib/src/solid/revolve.js",
+      "sha256": "b657be3dcdd93016",
+      "bytes": 1245
+    },
+    "lib/geo/solid/roundedBox.js": {
+      "from": "geo-lib/src/solid/roundedBox.js",
+      "sha256": "14d26f2edd065741",
+      "bytes": 2115
+    },
+    "lib/tsl/util/palette.js": {
+      "from": "tsl-lib/src/util/palette.js",
+      "sha256": "0750b55b999556e5",
+      "bytes": 1388
+    },
+    "lib/tsl/fresnel/fresnel.js": {
+      "from": "tsl-lib/src/fresnel/fresnel.js",
+      "sha256": "a51bc399891ef343",
+      "bytes": 1646
+    }
+  }
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurelius Learn — assembly training runtime</title>
+<meta name="description" content="A browser-native assembly training runtime: a WebGPU exploded view of the part being described, stepped procedure, and knowledge checks. Demonstration built on a sample dataset.">
+<meta name="color-scheme" content="dark">
+<!-- Inline so the page issues no request for it. A missing favicon is a 404
+     in the console, and this app's check gates on zero console errors. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230c0f11'/%3E%3Cpath d='M16 5l9.5 5.5v11L16 27l-9.5-5.5v-11z' fill='none' stroke='%23f4c95d' stroke-width='2.6'/%3E%3C/svg%3E">
+<!-- Fonts are served from this directory. No third party is contacted at
+     runtime, by design: the woff2 files under fonts/ were extracted from the
+     Aurelius landing bundle by tsl-lib/tools/extract-fonts.py. -->
+<link rel="stylesheet" href="./fonts/fonts.css">
+<link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+<div id="app"></div>
+<noscript>
+  <p style="padding:26px;font-family:system-ui,sans-serif;color:#b4bcc1">
+    Aurelius Learn is an interactive training runtime and needs JavaScript to run.
+  </p>
+</noscript>
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
