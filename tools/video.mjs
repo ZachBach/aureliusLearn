@@ -57,6 +57,33 @@
  *
  * The geq runs on the cropped box alone and is overlaid back; geq over a full
  * 1080p frame is slow enough to notice.
+ *
+ * ── The knowledge checks read "null" ─────────────────────────────────────────
+ *
+ * Take A was recorded before app.js stopped handing replaceChildren a null
+ * child, so every unanswered knowledge check shows the word "null" under its
+ * question. The fixed app puts a prompt on that line, and the prompt is patched
+ * into the take from a render of the fixed app — not typed in with drawtext,
+ * which would be a different rasteriser's idea of Space Grotesk sitting beside
+ * Chrome's.
+ *
+ * That works because the geometry is identical. Take A is a 1536x864 CSS
+ * viewport at 1.25 device pixels per CSS pixel (the sidebar's 216px column is
+ * 270px in the frame), and the prompt occupies exactly the line box the stray
+ * text node did: its paragraph has no margin, so nothing below it moves.
+ * video-prompt.png is that line, cropped from a screenshot of the fixed app at
+ * that viewport and scale — x 1397..1600, the 21 rows from four above the ink.
+ * It is the same pixels for all three checks; only the question above it
+ * changes height, which is what each run's y is.
+ *
+ * The runs were found by thresholding the panel frame by frame for a short text
+ * band at the question's left edge, and checked a frame either side of each run
+ * by eye: the word appears and disappears on a single frame, with no fade. In
+ * every patched frame nothing on that line is brighter than the panel except
+ * the word itself — the pointer never crosses it — so, unlike the watermark, a
+ * flat overlay loses nothing.
+ *
+ * If you re-record, the app draws the prompt itself and PROMPTS goes away.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, renameSync } from 'node:fs';
@@ -97,6 +124,19 @@ const TAKES = {
 const KEEP_ABOVE = 170;
 
 /**
+ * The prompt patch over "null", in take A. Frame numbers are into the take and
+ * inclusive; y is the patch's top edge in take pixels. Check 2's question wraps
+ * to two lines where the others take three, so its line sits 32px higher.
+ * Tracked in git, unlike the takes: it is a 204x21 crop of the app, not media.
+ */
+const PROMPT = { file: join(HERE, 'video-prompt.png'), x: 1397 };
+const PROMPTS = [
+  { start: 949, end: 1087, y: 279, note: 'check 1 - seal ring' },
+  { start: 1142, end: 1297, y: 247, note: 'check 2 - plunger' },
+  { start: 1349, end: 1454, y: 279, note: 'check 3 - two-pass torque' },
+];
+
+/**
  * The cut list, in output order. Frame numbers are into the raw take, `end` is
  * exclusive. They were found by aligning the previous cut against take A with
  * ffmpeg's psnr filter, and by stepping the sidebar highlight a frame at a time
@@ -123,6 +163,10 @@ for (const [key, take] of Object.entries(TAKES)) {
     process.exit(1);
   }
 }
+if (!existsSync(PROMPT.file)) {
+  console.error(`missing ${PROMPT.file} — it is tracked; restore it from git.`);
+  process.exit(1);
+}
 
 /** Scrub the watermark out of one input and hand back a labelled stream. */
 const scrub = (label, take, out) => {
@@ -138,8 +182,19 @@ const scrub = (label, take, out) => {
   ];
 };
 
+/** Lay the prompt over one input for each run of frames that read "null". */
+const prompt = (label, image, out) => [
+  `${image}split=${PROMPTS.length}${PROMPTS.map((_, i) => `[pr${i}]`).join('')}`,
+  ...PROMPTS.map((p, i) => {
+    const src = i === 0 ? label : `[${out}p${i}]`;
+    const dst = i === PROMPTS.length - 1 ? `[${out}]` : `[${out}p${i + 1}]`;
+    return `${src}[pr${i}]overlay=${PROMPT.x}:${p.y}:enable='between(n\\,${p.start}\\,${p.end})'${dst}`;
+  }),
+];
+
 const chains = [
-  ...scrub('[0:v]', TAKES.a, 'A'),
+  ...scrub('[0:v]', TAKES.a, 'Aw'),
+  ...prompt('[Aw]', '[3:v]', 'A'),
   ...scrub('[1:v]', TAKES.b, 'B'),
 ];
 
@@ -168,6 +223,8 @@ const args = [
   // A silent track, because the takes have one and some players are unhappy
   // without any audio stream at all. There is no narration to lose.
   '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000',
+  // The prompt patch, held as a still for as long as take A runs.
+  '-loop', '1', '-framerate', '30', '-i', PROMPT.file,
   '-filter_complex', chains.join(';'),
   '-map', '[v]', '-map', '2:a', '-shortest',
   '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-r', '30',
@@ -181,6 +238,9 @@ console.log(`${CUTS.length} cuts, ${frames} frames, ${(frames / 30).toFixed(2)}s
 for (const c of CUTS) {
   const secs = ((c.end - c.start) / 30).toFixed(2).padStart(5);
   console.log(`  take ${c.take}  ${String(c.start).padStart(4)}-${String(c.end - 1).padEnd(4)}  ${secs}s  ${c.note}`);
+}
+for (const p of PROMPTS) {
+  console.log(`  prompt a  ${String(p.start).padStart(4)}-${String(p.end).padEnd(4)}  y=${p.y}  ${p.note}`);
 }
 
 if (dry) {
