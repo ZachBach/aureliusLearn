@@ -3,6 +3,18 @@
 tools/shots/
 tools/chrome-profile-*/
 
+# Capture media travels by hand, not by git — same rule as echoGalaxy. The raw
+# screen takes are ~90 MB together and nothing regenerates them but recording
+# again, so they are backup's problem, not history's. `video/*` rather than
+# `video/` on purpose: git will not descend into an excluded directory, so a
+# bare `video/` makes the negation below impossible.
+video/*
+!video/*.md
+
+# And the guard that matters: src/ is what tools/deploy.mjs copies into the
+# site wholesale. An .mp4 dropped in there is an .mp4 on the Vercel deploy.
+*.mp4
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db
