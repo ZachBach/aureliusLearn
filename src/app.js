@@ -208,13 +208,18 @@ function renderDetail() {
     }));
 
     const chosen = picked === null ? null : chk.answers[picked];
-    body.replaceChildren(
+    // Filtered before it goes in. `replaceChildren` is the native DOM call, not
+    // el(), and it stringifies a null child into a text node reading "null"
+    // instead of skipping it — so an unanswered check renders the word null
+    // between its own question and its answers.
+    body.replaceChildren(...[
       el('div', { class: 'mono', style: 'color:var(--accent)', text: `KNOWLEDGE CHECK · ${state.qi + 1} OF ${m.checks.length}` }),
       el('h2', { text: chk.q }),
       chosen && el('div', { class: 'feedback' + (chosen.ok ? '' : ' no') },
         el('div', { class: 'mono', text: chosen.ok ? 'CORRECT' : 'NOT QUITE' }),
         el('p', { text: chosen.fb })),
-      answers);
+      answers,
+    ].filter(Boolean));
   } else {
     body.replaceChildren(
       el('div', { class: 'stepnum' },
