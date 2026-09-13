@@ -312,6 +312,10 @@ button { font-family: inherit; color: inherit; }
 .detail .body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 22px 24px; scroll-behavior: smooth; }
 .detail h2 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 10px 0 0; }
 .detail p.lede { font-size: 14px; line-height: 1.7; color: var(--body); margin: 12px 0 0; text-wrap: pretty; }
+/* No margin: the prompt takes exactly the line the stray "null" text used to,
+   so the answers keep their place — and tools/video.mjs can patch it into the
+   takes that were recorded with the bug. */
+.detail p.prompt { margin: 0; color: var(--dim); }
 .stepnum { display: flex; align-items: baseline; gap: 10px; }
 .stepnum b { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--accent); }
 

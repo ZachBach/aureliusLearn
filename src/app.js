@@ -208,16 +208,19 @@ function renderDetail() {
     }));
 
     const chosen = picked === null ? null : chk.answers[picked];
-    // Filtered before it goes in. `replaceChildren` is the native DOM call, not
+    // The slot between the question and the answers always holds something:
+    // the feedback once an answer is picked, and a prompt until then. The
+    // filter stays as the guard — `replaceChildren` is the native DOM call, not
     // el(), and it stringifies a null child into a text node reading "null"
-    // instead of skipping it — so an unanswered check renders the word null
-    // between its own question and its answers.
+    // instead of skipping it, which is exactly what this slot used to show.
     body.replaceChildren(...[
       el('div', { class: 'mono', style: 'color:var(--accent)', text: `KNOWLEDGE CHECK · ${state.qi + 1} OF ${m.checks.length}` }),
       el('h2', { text: chk.q }),
-      chosen && el('div', { class: 'feedback' + (chosen.ok ? '' : ' no') },
-        el('div', { class: 'mono', text: chosen.ok ? 'CORRECT' : 'NOT QUITE' }),
-        el('p', { text: chosen.fb })),
+      chosen
+        ? el('div', { class: 'feedback' + (chosen.ok ? '' : ' no') },
+          el('div', { class: 'mono', text: chosen.ok ? 'CORRECT' : 'NOT QUITE' }),
+          el('p', { text: chosen.fb }))
+        : el('p', { class: 'prompt', text: 'Choose one answer.' }),
       answers,
     ].filter(Boolean));
   } else {
