@@ -19,12 +19,14 @@ No build step, no bundler, no install. Plain ES modules and static files.
 
 ## The modules
 
-Two are authored, and they interlock on purpose:
+Three are authored. Two interlock on purpose; the third is an explicitly
+illustrative electric-motor assembly walkthrough:
 
 | | |
 | --- | --- |
 | **8841-02** Cartridge Insert Assembly | 6 steps · seat, seal, plunger, cartridge, torque |
 | **7712-01** Housing Weld Prep | 9 steps · the housing 8841-02 seats, prepared for weld |
+| **MOTOR-01** Electric Motor Assembly | 10 assembly steps · 3 knowledge checks · illustrative only |
 
 7712-01 is upstream, so several of its steps name the *downstream* consequence
 rather than the local one — a wrong-revision housing welds without complaint
@@ -32,6 +34,13 @@ and arrives at 8841-02 with a land 0.2 mm shallow. A trainee running both
 should notice that the defect one module warns about is the defect the other
 inherits. Two further library entries are deliberately unauthored, so the
 Library view shows what a partly-built library looks like.
+
+MOTOR-01 is a visual learning sequence built from invented geometry. It is not
+a validated manufacturing procedure, controlled SOP, electrical or mechanical
+safety guidance, or evidence that the depicted parts will fit or function. Its
+dimensions and sequence are illustrative; no torque, force, tolerance, wiring,
+or operating specifications are supplied. Do not use it to assemble or service
+real equipment.
 
 Adding a module is `src/data.js` plus, if it needs parts nothing else uses, a
 builder in `src/parts.js` and an entry in the `PARTS` catalogue. The check
@@ -64,7 +73,7 @@ construction rather than by good intentions.
 
 | | |
 | --- | --- |
-| `src/parts.js` | the six components, as turned profiles |
+| `src/parts.js` | the cartridge and motor-demo parts, with turned profiles |
 | `src/material.js` | one node material per part |
 | `src/viewport.js` | renderer, framing, orbit, exploder |
 | `src/data.js` | the sample module — steps, checks, figures |
@@ -109,10 +118,12 @@ The prototype drew its parts as cylinders and a torus. That is enough to say
 check asks a trainee to tell a chamfered seal face from a flat one under raking
 light, and a torus has no face to get backwards.
 
-So every part is a real turned profile — bores, lead-in chamfers, a relief
-groove, a knurled cap — revolved through geo-lib. `src/parts.js` carries the two
-non-obvious things that took to make it correct, and both are worth reading
-before touching a profile, because neither announces itself:
+The cartridge assembly's machined components are real turned profiles —
+bores, lead-in chamfers, a relief groove and a knurled cap — revolved through
+geo-lib. The motor walkthrough adds turned component bodies plus simplified
+box-built fan vanes and guard spokes. `src/parts.js` carries the two
+non-obvious things that took to make the profiles correct, and both are worth
+reading before touching one, because neither announces itself:
 
 - **A closed cross-section reverses in y**, and `revolve` puts every section of
   its spine on the axis, so the spine doubles back on itself. `loft` frames by

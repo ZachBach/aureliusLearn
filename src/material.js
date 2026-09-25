@@ -32,6 +32,7 @@ export const ACCENT_CSS = '#' + BRAND_GOLD.toString(16).padStart(6, '0');
 const TONES = {
   fixture: { color: 0x1b2228, metal: 0.35, rough: 0.74, turn: 13 },
   steel: { color: 0x49555d, metal: 0.82, rough: 0.34, turn: 17 },
+  copper: { color: 0x9b5735, metal: 0.76, rough: 0.38, turn: 15 },
   elastomer: { color: 0x1f6f68, metal: 0.04, rough: 0.62, turn: 0 },
   polymer: { color: 0x525b61, metal: 0.4, rough: 0.44, turn: 11 },
   brass: { color: 0x8a6f28, metal: 0.88, rough: 0.32, turn: 21 },

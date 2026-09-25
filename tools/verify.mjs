@@ -104,7 +104,12 @@ try {
     // Bore radii the profiles are authored to. A part listed here that comes
     // back solid has had its hole roofed over by an end cap; one absent from
     // the map must come back solid.
-    const BORES = { housing: 0.40, seal: 0.44, cartridge: 0.30, cap: 0.40, collar: 0.50 };
+    const BORES = {
+      housing: 0.40, seal: 0.44, cartridge: 0.30, cap: 0.40, collar: 0.50,
+      motor_housing: 0.82, motor_stator: 0.35, motor_windings: 0.67,
+      motor_drive_bearing: 0.13, motor_non_drive_bearing: 0.13,
+      motor_drive_endbell: 0.13, motor_non_drive_endbell: 0.13, motor_fan: 0.13,
+    };
 
     // Every authored module, not just the one that opens by default — the
     // second module's parts are otherwise never built during a check.
@@ -134,6 +139,48 @@ try {
         fail(`${code}: step/check parts not in the stack: ${info.orphans.join(', ')}`);
       } else {
         console.log(`  ok    ${info.steps} steps, every part in the stack`);
+      }
+
+      if (code === 'MOTOR-01') {
+        const walkthrough = await page.evaluate(() => {
+          const { MODULES, state } = window.__learn;
+          const module = MODULES.find((m) => m.code === state.moduleCode);
+          const timeline = [...document.querySelectorAll('.timeline button')];
+          const titles = [];
+          for (let i = 0; i < module.steps.length - 1; i++) {
+            timeline[i].click();
+            titles.push(document.querySelector('.detail h2')?.textContent);
+          }
+          timeline.at(-1).click();
+          return {
+            expected: module.steps.slice(0, -1).map((step) => step.title),
+            titles,
+            checkCount: module.checks.length,
+            correctIndex: module.checks[0].answers.findIndex((answer) => answer.ok),
+          };
+        });
+        if (walkthrough.titles.some((title, i) => title !== walkthrough.expected[i])) {
+          fail('MOTOR-01: a walkthrough step did not render its authored title');
+        } else {
+          console.log(`  ok    all ${walkthrough.titles.length} assembly steps render`);
+        }
+        if (walkthrough.checkCount !== 3 || walkthrough.correctIndex < 0) {
+          fail('MOTOR-01: expected three answerable knowledge checks');
+        } else {
+          const answersAccepted = await page.evaluate(() => {
+            const module = window.__learn.MODULES.find((m) => m.code === 'MOTOR-01');
+            const accepted = [];
+            module.checks.forEach((check, i) => {
+              const answer = check.answers.findIndex((item) => item.ok);
+              document.querySelectorAll('.answers button')[answer].click();
+              accepted.push(document.querySelector('.feedback')?.textContent.includes('CORRECT'));
+              if (i < module.checks.length - 1) document.querySelector('.foot button.primary').click();
+            });
+            return accepted;
+          });
+          if (!answersAccepted.every(Boolean)) fail('MOTOR-01: a knowledge-check answer was not accepted');
+          else console.log('  ok    all three knowledge checks accept their authored answers');
+        }
       }
 
       for (const s of info.stats) {

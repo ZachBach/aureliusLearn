@@ -123,7 +123,7 @@ function lathe(THREE, profile, opt = {}) {
 }
 
 /**
- * The six parts, in stack order. `key` matches the step and check data;
+ * Every part the sample modules can show. `key` matches the step and check data;
  * `label` is what the viewport HUD shows; `height` is what the exploder
  * spaces on.
  */
@@ -136,6 +136,16 @@ export const PARTS = [
   { key: 'cap', label: 'CAP', height: 0.22, tone: 'brass' },
   { key: 'nest', label: 'WELD NEST W-14', height: 0.34, tone: 'fixture' },
   { key: 'collar', label: 'COLLAR', height: 0.16, tone: 'steel' },
+  { key: 'motor_housing', label: 'MOTOR HOUSING', height: 0.90, tone: 'steel' },
+  { key: 'motor_stator', label: 'STATOR CORE', height: 0.54, tone: 'steel' },
+  { key: 'motor_windings', label: 'WINDING PACK', height: 0.60, tone: 'copper' },
+  { key: 'motor_rotor', label: 'ROTOR & SHAFT', height: 1.10, tone: 'steel' },
+  { key: 'motor_drive_bearing', label: 'DRIVE-END BEARING', height: 0.18, tone: 'brass' },
+  { key: 'motor_non_drive_bearing', label: 'NON-DRIVE BEARING', height: 0.18, tone: 'brass' },
+  { key: 'motor_drive_endbell', label: 'DRIVE-END BELL', height: 0.22, tone: 'polymer' },
+  { key: 'motor_non_drive_endbell', label: 'NON-DRIVE END BELL', height: 0.22, tone: 'polymer' },
+  { key: 'motor_fan', label: 'COOLING FAN', height: 0.18, tone: 'polymer' },
+  { key: 'motor_guard', label: 'FAN GUARD', height: 0.16, tone: 'steel' },
 ];
 
 export const partMeta = (key) => PARTS.find((p) => p.key === key);
@@ -311,7 +321,110 @@ function collar(THREE) {
   ], { radial: SMOOTH });
 }
 
-const BUILDERS = { base, housing, seal, plunger, cartridge, cap, nest, collar };
+function motorHousing(THREE) {
+  return lathe(THREE, [
+    [0.86, -0.45], [0.92, -0.40], [0.92, 0.40], [0.86, 0.45],
+    [0.82, 0.45], [0.82, -0.40], [0.86, -0.45],
+    [0.86, -0.45],
+  ], { radial: SMOOTH });
+}
+
+function motorStator(THREE) {
+  return lathe(THREE, [
+    [0.40, -0.27], [0.64, -0.27], [0.67, -0.23], [0.67, 0.23],
+    [0.64, 0.27], [0.40, 0.27], [0.35, 0.22], [0.35, -0.22],
+    [0.40, -0.27],
+  ], { radial: SMOOTH });
+}
+
+function motorWindings(THREE) {
+  return lathe(THREE, [
+    [0.69, -0.30], [0.77, -0.30], [0.80, -0.25], [0.80, 0.25],
+    [0.77, 0.30], [0.69, 0.30], [0.67, 0.25], [0.67, -0.25],
+    [0.69, -0.30],
+  ], { radial: SMOOTH });
+}
+
+function motorRotor(THREE) {
+  return lathe(THREE, [
+    [0.00, -0.55], [0.13, -0.55], [0.13, -0.20], [0.25, -0.20],
+    [0.30, -0.16], [0.30, 0.16], [0.25, 0.20], [0.13, 0.20],
+    [0.13, 0.55], [0.00, 0.55],
+  ], { radial: SMOOTH });
+}
+
+function motorBearing(THREE) {
+  return lathe(THREE, [
+    [0.13, -0.09], [0.34, -0.09], [0.38, -0.05], [0.38, 0.05],
+    [0.34, 0.09], [0.13, 0.09], [0.13, -0.09],
+  ], { radial: SMOOTH });
+}
+
+function motorEndbell(THREE) {
+  return lathe(THREE, [
+    [0.13, -0.11], [0.78, -0.11], [0.88, -0.06], [0.88, 0.06],
+    [0.78, 0.11], [0.13, 0.11], [0.13, -0.11],
+  ], { radial: SMOOTH });
+}
+
+function motorFan(THREE) {
+  const hub = lathe(THREE, [
+    [0.13, -0.07], [0.25, -0.07], [0.28, -0.04], [0.28, 0.04],
+    [0.25, 0.07], [0.13, 0.07], [0.13, -0.07],
+  ], { radial: SMOOTH });
+  const a = assembly(THREE);
+  a.part(hub, 0, 0, 0);
+  const blade = roundedBox(THREE, 0.14, 0.07, 0.70, 0.025);
+  for (let i = 0; i < 8; i++) {
+    const vane = blade.clone();
+    vane.translate(0.43, 0, 0);
+    vane.rotateY((i / 8) * Math.PI * 2);
+    a.part(vane, 0, 0, 0);
+    vane.dispose();
+  }
+  blade.dispose();
+  hub.dispose();
+  return a.geometry();
+}
+
+function motorGuard(THREE) {
+  const ring = lathe(THREE, [
+    [0.78, -0.06], [0.92, -0.06], [0.92, 0.06], [0.78, 0.06],
+    [0.78, -0.06],
+  ], { radial: SMOOTH });
+  const hub = lathe(THREE, [
+    [0.00, -0.07], [0.19, -0.07], [0.19, 0.07], [0.00, 0.07],
+  ], { radial: SMOOTH });
+  const a = assembly(THREE);
+  a.part(ring, 0, 0, 0);
+  a.part(hub, 0, 0, 0);
+  const strut = roundedBox(THREE, 0.045, 0.08, 0.62, 0.012);
+  for (let i = 0; i < 10; i++) {
+    const spoke = strut.clone();
+    spoke.translate(0.48, 0, 0);
+    spoke.rotateY((i / 10) * Math.PI * 2);
+    a.part(spoke, 0, 0, 0);
+    spoke.dispose();
+  }
+  strut.dispose();
+  ring.dispose();
+  hub.dispose();
+  return a.geometry();
+}
+
+const BUILDERS = {
+  base, housing, seal, plunger, cartridge, cap, nest, collar,
+  motor_housing: motorHousing,
+  motor_stator: motorStator,
+  motor_windings: motorWindings,
+  motor_rotor: motorRotor,
+  motor_drive_bearing: motorBearing,
+  motor_non_drive_bearing: motorBearing,
+  motor_drive_endbell: motorEndbell,
+  motor_non_drive_endbell: motorEndbell,
+  motor_fan: motorFan,
+  motor_guard: motorGuard,
+};
 
 /**
  * Build every part once. Returns { key: BufferGeometry }.
