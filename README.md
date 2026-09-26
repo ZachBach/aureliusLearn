@@ -204,5 +204,7 @@ ORCID [0009-0001-3046-9104](https://orcid.org/0009-0001-3046-9104) ·
 [github.com/ZachBach](https://github.com/ZachBach) ·
 [build@aureliusdynamic.com](mailto:build@aureliusdynamic.com)
 
+[![DOI](https://zenodo.org/badge/1360532585.svg)](https://doi.org/10.5281/zenodo.22977075)
+
 Citation metadata is in [`CITATION.cff`](CITATION.cff), and its abstract
 carries the fixture-data scope statement so it travels with the citation.

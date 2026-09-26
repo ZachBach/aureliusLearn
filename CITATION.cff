@@ -9,8 +9,12 @@ cff-version: 1.2.0
 title: "Aurelius Learn: a browser-native assembly training runtime with procedural part geometry"
 message: "If you reference this work, please cite it as below."
 type: software
-version: 0.1.0
-date-released: 2026-09-07
+version: 0.1.1
+date-released: 2026-09-26
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22977075"
+    description: "Zenodo concept DOI: all versions, resolves to the latest"
 
 authors:
   - given-names: Zachary
@@ -34,9 +38,9 @@ abstract: >-
   A browser-native training runtime that steps an assembly procedure one
   operation at a time beside a live exploded view of the component each step
   describes, with knowledge checks posed against that same geometry. Every
-  part is generated as a turned profile — bores, lead-in chamfers, a relief
-  groove, a knurled cap — revolved procedurally rather than modelled, so a
-  feature the training text depends upon, such as a seal ring's single
+  part, with its bores, lead-in chamfers, relief groove and knurled cap, is
+  generated as a turned profile and revolved procedurally rather than
+  modelled, so a feature the training text depends upon, such as a seal ring's single
   chamfered face, exists as geometry that catches a real highlight. Rendering
   uses WebGPU with TSL node materials and falls back to WebGL2 through the
   same node graph. The application makes no external network requests at
