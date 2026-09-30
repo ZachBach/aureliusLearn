@@ -126,6 +126,13 @@ function lathe(THREE, profile, opt = {}) {
  * Every part the sample modules can show. `key` matches the step and check data;
  * `label` is what the viewport HUD shows; `height` is what the exploder
  * spaces on.
+ *
+ * Parts with an `at` are PLACED rather than stacked: `at` is where the part
+ * sits in the assembled unit and `dir` is the direction and distance it
+ * travels at full explode. A module whose parts all stack on one axis leaves
+ * both out and gets the vertical layout; a module that is a shell with things
+ * attached to it — the PulseMask walkthrough — cannot be expressed as a stack
+ * at all, and this is the smallest extension that lets it be shown.
  */
 export const PARTS = [
   { key: 'base', label: 'FIXTURE F-22', height: 0.14, tone: 'fixture' },
@@ -146,6 +153,36 @@ export const PARTS = [
   { key: 'motor_non_drive_endbell', label: 'NON-DRIVE END BELL', height: 0.22, tone: 'polymer' },
   { key: 'motor_fan', label: 'COOLING FAN', height: 0.18, tone: 'polymer' },
   { key: 'motor_guard', label: 'FAN GUARD', height: 0.16, tone: 'steel' },
+
+  // PulseMask, face up on the bench. +Y is forward (toward the visor), +Z is
+  // the crown, -Z the chin. Illustrative proportions from the design study's
+  // published part list — not its geometry engine, which is proprietary and
+  // is not vendored here. Every canister part explodes forward and clear of
+  // the chin, "outward, in reverse airflow order", which is how the walkthrough
+  // says the stack is built.
+  { key: 'pm_face_form', label: 'FACE FORM (BUST)', height: 0.74, tone: 'fixture', at: [0, 0, 0], dir: [0, -1.05, 0] },
+  { key: 'pm_foam', label: 'COMFORT FOAM FACING', height: 0.06, tone: 'foam', at: [0, 0.07, 0], dir: [0, -0.62, 0] },
+  { key: 'pm_seal_bead', label: 'SEAL BEAD', height: 0.18, tone: 'silicone', at: [0, 0.16, 0], dir: [0, -0.34, 0] },
+  { key: 'pm_pzt_seal', label: 'PZT SEAL SENSORS (SCULPT)', height: 0.06, tone: 'ceramic', at: [0, 0.27, 0], dir: [0, -0.2, 0] },
+  { key: 'pm_cup', label: 'ORONASAL CUP', height: 0.56, tone: 'silicone', at: [0, 0, -0.38], dir: [0, 0.22, -0.34] },
+  { key: 'pm_shell', label: 'SHELL · SLS PA12', height: 1.4, tone: 'nylon', at: [0, 0, 0], dir: [0, 0, 0] },
+  { key: 'pm_visor_gasket', label: 'VISOR GASKET', height: 0.06, tone: 'silicone', at: [0, 1.31, 0.06], dir: [0, 0.5, 0] },
+  { key: 'pm_visor_lens', label: 'VISOR LENS · POLYCARBONATE', height: 0.06, tone: 'visor', at: [0, 1.35, 0.06], dir: [0, 0.82, 0] },
+  { key: 'pm_collar', label: 'CANISTER COLLAR', height: 0.16, tone: 'alloy', at: [0, 0.32, -1.72], dir: [0, 0.34, -0.36] },
+  { key: 'pm_blower', label: 'PZT BLOWER STACK', height: 0.12, tone: 'ceramic', at: [0, 0.48, -1.72], dir: [0, 0.62, -0.36] },
+  { key: 'pm_reactor', label: 'UV-C REACTOR HOUSING (EMPTY)', height: 0.34, tone: 'alloy', at: [0, 0.74, -1.72], dir: [0, 0.92, -0.36] },
+  { key: 'pm_status_band', label: 'UV STATUS BAND · NOT A WINDOW', height: 0.06, tone: 'indicator', at: [0, 0.74, -1.72], dir: [0, 0.92, -0.36] },
+  { key: 'pm_capsid_ring', label: 'PZT CAPSID RING', height: 0.08, tone: 'ceramic', at: [0, 0.96, -1.72], dir: [0, 1.24, -0.36] },
+  { key: 'pm_filter', label: 'FILTER CARTRIDGE', height: 0.24, tone: 'polymer', at: [0, 1.14, -1.72], dir: [0, 1.54, -0.36] },
+  { key: 'pm_coalescer', label: 'PZT COALESCER', height: 0.08, tone: 'ceramic', at: [0, 1.32, -1.72], dir: [0, 1.86, -0.36] },
+  { key: 'pm_grille', label: 'INTAKE GRILLE', height: 0.24, tone: 'alloy', at: [0, 1.50, -1.72], dir: [0, 2.2, -0.36] },
+  { key: 'pm_scale_hood', label: 'SCALE HOOD · BRONZE', height: 0.9, tone: 'bronze', at: [0, 0, 0], dir: [0, 0.34, 0.66] },
+  { key: 'pm_horn_l', label: 'SOLAR HORN · LEFT', height: 1.3, tone: 'bronze', at: [-1.3, 0.55, 0.55], dir: [-0.55, 0.42, 0.3] },
+  { key: 'pm_horn_r', label: 'SOLAR HORN · RIGHT', height: 1.3, tone: 'bronze', at: [1.3, 0.55, 0.55], dir: [0.55, 0.42, 0.3] },
+  { key: 'pm_pv_array', label: 'PV ARRAY (SCULPT)', height: 1.1, tone: 'pv', at: [0, 0.55, 0.55], dir: [0, 0.42, 0.3] },
+  { key: 'pm_crest', label: 'CREST KEEL + ANTENNA', height: 0.16, tone: 'bronze', at: [0, 1.05, 1.44], dir: [0, 0.42, 0.72] },
+  { key: 'pm_anchors', label: 'STRAP ANCHORS ×4', height: 0.12, tone: 'nylon', at: [0, 0.42, 0], dir: [0, 0.12, 0] },
+  { key: 'pm_el_wire', label: 'EL WIRE (VISIBLE LIGHT)', height: 0.06, tone: 'indicator', at: [0, 0, 0], dir: [0, 0.58, 0] },
 ];
 
 export const partMeta = (key) => PARTS.find((p) => p.key === key);
@@ -412,8 +449,316 @@ function motorGuard(THREE) {
   return a.geometry();
 }
 
+/* ── PulseMask ─────────────────────────────────────────────────────────────
+ *
+ * A face is taller than it is wide, so every part that follows the face is
+ * revolved with an elliptical section — revolve's `[r, y, ry]` form — at this
+ * ratio. It is what a lathe can never make and what a shell over a face has
+ * to be.
+ */
+const FACE = 1.16;
+const ell = (profile) => profile.map(([r, y]) => [r, y, r * FACE]);
+
+/**
+ * A rounded regular hexagon, as a `shape` multiplier: the ratio of a hexagon's
+ * radius at this angle to its inradius, pulled part way back toward a circle.
+ * The flats sit at the profile radius and the corners reach past it, so a
+ * bored hexagonal part keeps the bore it was authored with. Radial count must
+ * be a multiple of six so the corners land on samples rather than between
+ * them.
+ */
+function hexagon(round = 0.22) {
+  const S = Math.PI / 3;
+  return (a) => {
+    const k = ((a % S) + S) % S - S / 2;
+    const hex = 1 / Math.cos(k);
+    return 1 + (hex - 1) * (1 - round);
+  };
+}
+
+/** Eight shallow longitudinal grooves, the shell's armour panelling. */
+const seams = (a) => 1 - 0.018 * Math.pow(Math.abs(Math.sin(a * 4)), 28);
+
+/**
+ * Place a geometry with its local +Y turned to `normal`, at `pos`. Used for
+ * the scale plates, which lie tangent to the shell like roof tiles.
+ */
+function placeOn(THREE, geo, pos, normal) {
+  const n = new THREE.Vector3(...normal).normalize();
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n);
+  const g = geo.clone();
+  g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), q, new THREE.Vector3(1, 1, 1)));
+  return g;
+}
+
+/** The reconstructed bust the shell is grown onto: a solid elliptical dome. */
+function pmFaceForm(THREE) {
+  return lathe(THREE, ell([
+    [0.00, -0.12], [1.12, -0.12], [1.28, 0.00], [1.27, 0.16],
+    [1.06, 0.34], [0.64, 0.50], [0.24, 0.60], [0.00, 0.62],
+  ]), { radial: SMOOTH });
+}
+
+/** Closed-cell foam on the rim path — the stage everyone skips. */
+function pmFoam(THREE) {
+  return lathe(THREE, ell([
+    [1.16, -0.03], [1.42, -0.03], [1.42, 0.03], [1.16, 0.03], [1.16, -0.03],
+  ]), { radial: SMOOTH });
+}
+
+/** The seal bead: an 8.4 mm section tube around the rim, drawn as a ring of circular section. */
+function pmSealBead(THREE) {
+  const pts = [];
+  for (let i = 0; i <= 10; i++) {
+    const phi = -Math.PI / 2 + (i / 10) * Math.PI * 2;
+    pts.push([1.30 + Math.cos(phi) * 0.09, Math.sin(phi) * 0.09]);
+  }
+  return lathe(THREE, ell(pts), { radial: SMOOTH });
+}
+
+/** Six seal-contact pucks seated into the bead. Solid sculpt, no cavity. */
+function pmPztSeal(THREE) {
+  const puck = lathe(THREE, [
+    [0.00, -0.03], [0.07, -0.03], [0.07, 0.03], [0.00, 0.03],
+  ], { radial: 24 });
+  const a = assembly(THREE);
+  for (let i = 0; i < 6; i++) {
+    const t = (i / 6) * Math.PI * 2 + Math.PI / 6;
+    a.part(puck, Math.cos(t) * 1.30, 0, Math.sin(t) * 1.30 * FACE);
+  }
+  puck.dispose();
+  return a.geometry();
+}
+
+/** The inner cup over nose and mouth — the thinnest structural part. */
+function pmCup(THREE) {
+  return lathe(THREE, [
+    [0.00, 0.80], [0.56, 0.62], [0.58, 0.30],   // inner surface down to the rim
+    [0.64, 0.30], [0.62, 0.66], [0.00, 0.86],   // rim, outer surface back to the axis
+  ], { radial: SMOOTH });
+}
+
+/**
+ * The shell, open toward the face, with the eight armour seams on its skin.
+ * Its front is a flat the visor sits flush on: a revolved shell cannot carry
+ * an aperture, so the lens is shown seated into the surface rather than
+ * through it.
+ */
+function pmShell(THREE) {
+  return lathe(THREE, ell([
+    [0.00, 1.22], [0.92, 1.20], [1.36, 0.72], [1.42, 0.12],   // inner surface
+    [1.50, 0.12], [1.44, 0.75], [1.12, 1.18], [1.00, 1.32],   // rim, outer surface
+    [0.00, 1.32],                                             // the visor flat
+  ]), { radial: 96, shape: seams });
+}
+
+/** Rounded-hexagon gasket and lens, as the aperture is drawn. */
+function pmVisorGasket(THREE) {
+  return lathe(THREE, [
+    [0.93, -0.03], [1.04, -0.03], [1.04, 0.03], [0.93, 0.03], [0.93, -0.03],
+  ], { radial: 96, shape: hexagon() });
+}
+function pmVisorLens(THREE) {
+  return lathe(THREE, [
+    [0.00, -0.03], [1.02, -0.03], [1.02, 0.03], [0.00, 0.03],
+  ], { radial: 96, shape: hexagon() });
+}
+
+/* The chin canister, seven parts at their own origins. */
+function pmCollar(THREE) {
+  return lathe(THREE, [
+    [0.42, -0.08], [0.52, -0.08], [0.56, -0.04], [0.56, 0.04],
+    [0.52, 0.08], [0.42, 0.08], [0.42, -0.08],
+  ], { radial: SMOOTH });
+}
+function pmBlower(THREE) {
+  return lathe(THREE, [
+    [0.00, -0.06], [0.46, -0.06], [0.50, -0.02], [0.50, 0.02], [0.46, 0.06], [0.00, 0.06],
+  ], { radial: SMOOTH });
+}
+/** Lathed at eight segments — the flats are design, not faceting artefacts. */
+function pmReactor(THREE) {
+  return lathe(THREE, [
+    [0.44, -0.17], [0.53, -0.17], [0.56, -0.14], [0.56, 0.14],
+    [0.53, 0.17], [0.44, 0.17], [0.44, -0.17],
+  ], { radial: 8 });
+}
+function pmStatusBand(THREE) {
+  return lathe(THREE, [
+    [0.57, -0.03], [0.61, -0.03], [0.61, 0.03], [0.57, 0.03], [0.57, -0.03],
+  ], { radial: SMOOTH });
+}
+function pmCapsidRing(THREE) {
+  return lathe(THREE, [
+    [0.40, -0.04], [0.50, -0.04], [0.50, 0.04], [0.40, 0.04], [0.40, -0.04],
+  ], { radial: SMOOTH });
+}
+function pmFilter(THREE) {
+  return lathe(THREE, [
+    [0.30, -0.12], [0.48, -0.12], [0.52, -0.08], [0.52, 0.08],
+    [0.48, 0.12], [0.30, 0.12], [0.30, -0.12],
+  ], { radial: SMOOTH });
+}
+function pmCoalescer(THREE) {
+  return lathe(THREE, [
+    [0.36, -0.04], [0.50, -0.04], [0.50, 0.04], [0.36, 0.04], [0.36, -0.04],
+  ], { radial: SMOOTH });
+}
+function pmGrille(THREE) {
+  return lathe(THREE, [
+    [0.00, -0.09], [0.55, -0.09], [0.55, 0.00], [0.45, 0.09], [0.20, 0.14], [0.00, 0.15],
+  ], { radial: SMOOTH });
+}
+
+/**
+ * The scale hood: three rows of overlapping plates over the crown half of the
+ * shell, each laid tangent to the surface with its point toward the rim.
+ */
+function pmScaleHood(THREE) {
+  const plate = roundedBox(THREE, 0.22, 0.03, 0.26, 0.02);
+  // Radii sit a plate's thickness proud of the shell's outer surface at each
+  // height (1.46, 1.31 and 1.10 on the profile), so the plates lie ON the
+  // shell rather than inside its wall.
+  const rows = [
+    { r: 1.50, y: 0.52, n: [0.90, 0.44], count: 11 },
+    { r: 1.35, y: 0.92, n: [0.70, 0.72], count: 9 },
+    { r: 1.14, y: 1.20, n: [0.45, 0.90], count: 7 },
+  ];
+  const a = assembly(THREE);
+  rows.forEach((row, k) => {
+    for (let i = 0; i < row.count; i++) {
+      // Alternate rows offset half a column, like roof tiles.
+      const t = ((i + (k % 2) * 0.5) / (row.count - 1 + (k % 2) * 0.5)) * Math.PI * 0.86 + Math.PI * 0.07;
+      const pos = [Math.cos(t) * row.r, row.y, Math.sin(t) * row.r * FACE];
+      const g = placeOn(THREE, plate, pos, [Math.cos(t) * row.n[0], row.n[1], Math.sin(t) * row.n[0]]);
+      a.part(g, 0, 0, 0);
+      g.dispose();
+    }
+  });
+  plate.dispose();
+  return a.geometry();
+}
+
+/**
+ * A tapered horn, solid, built from its base at the origin and then leaned
+ * back toward the crown. Rotating about the base rather than the middle keeps
+ * the base's axis vertex at the origin, which is what the headless check reads
+ * a solid part by.
+ */
+const HORN_LEAN = -0.55;
+function pmHorn(THREE) {
+  const g = lathe(THREE, [
+    [0.00, 0.00], [0.16, 0.00], [0.16, 0.10], [0.03, 1.25], [0.00, 1.30],
+  ], { radial: 32 });
+  g.rotateX(HORN_LEAN);
+  return g;
+}
+
+/**
+ * Seven panels on the outboard face of each horn, leaned with the horns.
+ * Cosmetic sculpt, no cells.
+ */
+function pmPvArray(THREE) {
+  const panel = roundedBox(THREE, 0.03, 0.14, 0.12, 0.01);
+  const a = assembly(THREE);
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 7; i++) {
+      const y = 0.15 + i * 0.16;
+      const r = 0.16 - (0.13 * (y - 0.1)) / 1.15;    // the horn's radius at this height
+      a.part(panel, side * (1.3 + r + 0.02), y, 0);
+    }
+  }
+  panel.dispose();
+  const g = a.geometry();
+  g.rotateX(HORN_LEAN);
+  return g;
+}
+
+/**
+ * The keel on the crown centreline, carrying the antenna meander as a ridge.
+ * Leaned to lie along the crown's slope — its local +Y ends up pointing along
+ * the shell normal there, (0, 0.62, 0.78).
+ */
+function pmCrest(THREE) {
+  const keel = roundedBox(THREE, 0.08, 0.16, 0.90, 0.02);
+  const a = assembly(THREE);
+  a.part(keel, 0, 0, 0);
+  const wire = roundedBox(THREE, 0.16, 0.02, 0.05, 0.005);
+  for (let i = 0; i < 9; i++) a.part(wire, 0, 0.09, -0.36 + i * 0.09);
+  wire.dispose();
+  keel.dispose();
+  const g = a.geometry();
+  g.rotateX(-0.9);
+  return g;
+}
+
+/**
+ * Four strap-anchor loops at 16°, 164°, 206° and 334° around the rim, each
+ * standing proud of the shell wall (1.47 at this height) by its own depth.
+ */
+function pmAnchors(THREE) {
+  const loop = roundedBox(THREE, 0.26, 0.12, 0.08, 0.02);
+  const a = assembly(THREE);
+  for (const deg of [16, 164, 206, 334]) {
+    const t = (deg * Math.PI) / 180;
+    const g = loop.clone();
+    g.rotateY(Math.PI / 2 - t);
+    g.translate(Math.cos(t) * 1.54, 0, Math.sin(t) * 1.54 * FACE);
+    a.part(g, 0, 0, 0);
+    g.dispose();
+  }
+  loop.dispose();
+  return a.geometry();
+}
+
+/**
+ * Two EL-wire rings tracing the seam grooves, each a wire's radius outside
+ * the shell surface at its height. Visible spectrum only.
+ */
+function pmElWire(THREE) {
+  const ring = (R, y) => {
+    const pts = [];
+    for (let i = 0; i <= 8; i++) {
+      const phi = -Math.PI / 2 + (i / 8) * Math.PI * 2;
+      pts.push([R + Math.cos(phi) * 0.03, y + Math.sin(phi) * 0.03]);
+    }
+    return lathe(THREE, ell(pts), { radial: 96 });
+  };
+  const a = assembly(THREE);
+  const r1 = ring(1.48, 0.58);
+  const r2 = ring(1.32, 0.95);
+  a.part(r1, 0, 0, 0);
+  a.part(r2, 0, 0, 0);
+  r1.dispose();
+  r2.dispose();
+  return a.geometry();
+}
+
 const BUILDERS = {
   base, housing, seal, plunger, cartridge, cap, nest, collar,
+  pm_face_form: pmFaceForm,
+  pm_foam: pmFoam,
+  pm_seal_bead: pmSealBead,
+  pm_pzt_seal: pmPztSeal,
+  pm_cup: pmCup,
+  pm_shell: pmShell,
+  pm_visor_gasket: pmVisorGasket,
+  pm_visor_lens: pmVisorLens,
+  pm_collar: pmCollar,
+  pm_blower: pmBlower,
+  pm_reactor: pmReactor,
+  pm_status_band: pmStatusBand,
+  pm_capsid_ring: pmCapsidRing,
+  pm_filter: pmFilter,
+  pm_coalescer: pmCoalescer,
+  pm_grille: pmGrille,
+  pm_scale_hood: pmScaleHood,
+  pm_horn_l: pmHorn,
+  pm_horn_r: pmHorn,
+  pm_pv_array: pmPvArray,
+  pm_crest: pmCrest,
+  pm_anchors: pmAnchors,
+  pm_el_wire: pmElWire,
   motor_housing: motorHousing,
   motor_stator: motorStator,
   motor_windings: motorWindings,

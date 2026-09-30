@@ -36,6 +36,18 @@ const TONES = {
   elastomer: { color: 0x1f6f68, metal: 0.04, rough: 0.62, turn: 0 },
   polymer: { color: 0x525b61, metal: 0.4, rough: 0.44, turn: 11 },
   brass: { color: 0x8a6f28, metal: 0.88, rough: 0.32, turn: 21 },
+  // The PulseMask walkthrough's materials, at the design study's published
+  // colour and roughness values. `alpha` makes a tone transparent; `glow` is
+  // a constant emissive for an indicator surface.
+  nylon: { color: 0xb9b3a6, metal: 0.04, rough: 0.58, turn: 0 },
+  silicone: { color: 0x31343a, metal: 0.0, rough: 0.93, turn: 0 },
+  foam: { color: 0x24282c, metal: 0.0, rough: 0.96, turn: 0 },
+  alloy: { color: 0x8b9298, metal: 0.35, rough: 0.33, turn: 9 },
+  bronze: { color: 0x9c7c46, metal: 0.55, rough: 0.34, turn: 0 },
+  ceramic: { color: 0xd4b23f, metal: 0.4, rough: 0.26, turn: 7 },
+  pv: { color: 0x141a26, metal: 0.3, rough: 0.16, turn: 0 },
+  visor: { color: 0xc6ddcb, metal: 0.02, rough: 0.05, turn: 0, alpha: 0.32 },
+  indicator: { color: 0x9dff5c, metal: 0.08, rough: 0.14, turn: 0, glow: [0.16, 0.44, 0.06] },
 };
 
 /** The shared accent uniform, seeded from the studio palette's brand gold. */
@@ -93,6 +105,13 @@ export function partMaterial(THREE, tone, accent) {
   const rim = fresnel(TSL, { power: 3.4 });
   const breath = time.mul(1.9).sin().mul(0.13).add(0.87);
   m.emissiveNode = accent.mul(rim).mul(highlight).mul(breath).mul(0.62);
+  if (spec.glow) m.emissiveNode = m.emissiveNode.add(vec3(...spec.glow));
+
+  if (spec.alpha) {
+    m.transparent = true;
+    m.opacity = spec.alpha;
+    m.depthWrite = false;
+  }
 
   m.userData.highlight = highlight;
   return m;

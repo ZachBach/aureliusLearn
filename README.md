@@ -19,14 +19,16 @@ No build step, no bundler, no install. Plain ES modules and static files.
 
 ## The modules
 
-Three are authored. Two interlock on purpose; the third is an explicitly
-illustrative electric-motor assembly walkthrough:
+Four are authored. Two interlock on purpose; the third is an explicitly
+illustrative electric-motor assembly walkthrough; the fourth walks the eleven
+build stages of the studio's PulseMask design study:
 
 | | |
 | --- | --- |
 | **8841-02** Cartridge Insert Assembly | 6 steps · seat, seal, plunger, cartridge, torque |
 | **7712-01** Housing Weld Prep | 9 steps · the housing 8841-02 seats, prepared for weld |
 | **MOTOR-01** Electric Motor Assembly | 10 assembly steps · 3 knowledge checks · illustrative only |
+| **PM-ASSY** PulseMask Build Walkthrough | 21 build steps · 3 knowledge checks · illustrative geometry |
 
 7712-01 is upstream, so several of its steps name the *downstream* consequence
 rather than the local one — a wrong-revision housing welds without complaint
@@ -41,6 +43,21 @@ safety guidance, or evidence that the depicted parts will fit or function. Its
 dimensions and sequence are illustrative; no torque, force, tolerance, wiring,
 or operating specifications are supplied. Do not use it to assemble or service
 real equipment.
+
+PM-ASSY follows the eleven stages of PulseMask's own assembly page, in its
+order, with the page's tools, adhesives and cautions carried into the steps.
+Its 23 parts are illustrative profiles at the study's published proportions —
+not its geometry engine, which is proprietary and is not vendored here. The
+scope statement that travels with everything PulseMask travels with the module
+too: a decorative wearable-art piece, not a respirator, not PPE, not a medical
+device, and never a home for a UV-C emitter.
+
+PM-ASSY is also the one **placed** module. The other three stack their parts
+along one axis and the exploder spaces them by height; a shell with a canister
+under its chin and horns on its temples is not a stack, so each of its parts
+carries a seat (`at`) and an explode direction (`dir`) in the `PARTS`
+catalogue, and `src/viewport.js` lays a module out that way whenever every part
+in its stack has both. Modules without them get the vertical layout unchanged.
 
 Adding a module is `src/data.js` plus, if it needs parts nothing else uses, a
 builder in `src/parts.js` and an entry in the `PARTS` catalogue. The check

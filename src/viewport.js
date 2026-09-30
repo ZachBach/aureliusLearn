@@ -1,5 +1,10 @@
 /**
- * viewport.js — the assembly view: six parts, an exploder, and an orbit.
+ * viewport.js — the assembly view: the module's parts, an exploder, and an orbit.
+ *
+ * Two layouts. A stacked module (the cartridge, the weld prep, the motor)
+ * lays its parts along Y and spaces them by height. A placed module — the
+ * PulseMask walkthrough — gives every part a seat and an explode direction,
+ * because a shell with things on it is not a stack. See `placedLayout`.
  *
  * WebGPU with a WebGL2 fallback. Both paths run the same TSL node materials,
  * which is the reason the fallback is a fallback and not a second renderer:
@@ -30,6 +35,23 @@ function layout(stack, k) {
 
 const SEATED = 0.62;   // interpenetrating: the assembled unit
 const EXPLODED = 3.4;  // clear air between every face
+
+/**
+ * Placed layout, for a module whose parts carry `at` and `dir`: each part
+ * sits at `at` and travels along `dir` as the explode rises. A mask is a
+ * shell with things attached to its outside and inside, and no ordering of
+ * its parts along one axis reads as the object — so the data says where each
+ * one lives instead. `PLACED_TRAVEL` is the distance a unit `dir` covers at
+ * full explode.
+ */
+const PLACED_TRAVEL = 1.25;
+function placedLayout(stack, k) {
+  return stack.map((p) => [
+    p.at[0] + p.dir[0] * PLACED_TRAVEL * k,
+    p.at[1] + p.dir[1] * PLACED_TRAVEL * k,
+    p.at[2] + p.dir[2] * PLACED_TRAVEL * k,
+  ]);
+}
 
 /**
  * A studio environment, generated rather than loaded.
@@ -188,7 +210,10 @@ export async function createViewport(THREE, canvas, opts = {}) {
     if (st.spin && !st.drag) st.yaw += 0.0038;
     if (st.stack.length === 0) return;
 
-    const y = layout(st.stack, SEATED + (EXPLODED - SEATED) * st.explode);
+    const placed = st.stack.every((p) => p.at && p.dir);
+    const pos = placed
+      ? placedLayout(st.stack, st.explode)
+      : layout(st.stack, SEATED + (EXPLODED - SEATED) * st.explode).map((v) => [0, v, 0]);
     let settled = true;
     st.stack.forEach((part, i) => {
       const g = groups[part.key];
@@ -203,10 +228,10 @@ export async function createViewport(THREE, canvas, opts = {}) {
         else settled = false;
       }
 
-      // Stashed for the drag handler, which needs the laid-out height to turn
-      // a world-space grab point back into an offset.
-      g.userData.baseY = y[i];
-      g.position.set(off.x, y[i] + off.y, off.z);
+      // Stashed for the drag handler, which needs the laid-out position to
+      // turn a world-space grab point back into an offset.
+      g.userData.base = pos[i];
+      g.position.set(pos[i][0] + off.x, pos[i][1] + off.y, pos[i][2] + off.z);
 
       // Ease the highlight rather than switching it: the eye tracks a fade to
       // the part that changed, where an instant swap just redraws the picture.
@@ -221,19 +246,34 @@ export async function createViewport(THREE, canvas, opts = {}) {
     // visible height is 2*d*tan(16deg), so the distance that fits `span` with
     // room to spare falls straight out of it. Tuned constants got this subtly
     // wrong and clipped the cap off the top only at full explode.
-    const span = y[y.length - 1] - y[0] + st.stack[0].height + st.stack[st.stack.length - 1].height;
+    // A placed module has no ends: its span is the reach of its farthest
+    // part from the centre of the arrangement, in any direction.
+    let span;
+    const centre = [0, 0, 0];
+    if (placed) {
+      let reach = 0;
+      for (let i = 0; i < pos.length; i++) for (let c = 0; c < 3; c++) centre[c] += pos[i][c] / pos.length;
+      st.stack.forEach((part, i) => {
+        const d = Math.hypot(pos[i][0] - centre[0], pos[i][1] - centre[1], pos[i][2] - centre[2]);
+        reach = Math.max(reach, d + part.height * 0.9);
+      });
+      span = reach * 2;
+    } else {
+      const y = pos.map((p) => p[1]);
+      span = y[y.length - 1] - y[0] + st.stack[0].height + st.stack[st.stack.length - 1].height;
+    }
     const halfFov = (camera.fov / 2) * (Math.PI / 180);
     const FILL = 0.78; // leave a margin, and clear the controls along the bottom
     const dist = Math.max(4.2, span / (2 * Math.tan(halfFov) * FILL)) + st.zoom;
     const cp = Math.cos(st.pitch);
     camera.position.set(
-      Math.sin(st.yaw) * cp * dist,
-      Math.sin(st.pitch) * dist,
-      Math.cos(st.yaw) * cp * dist,
+      centre[0] + Math.sin(st.yaw) * cp * dist,
+      centre[1] + Math.sin(st.pitch) * dist,
+      centre[2] + Math.cos(st.yaw) * cp * dist,
     );
     // Aim slightly low so the stack rides above the HUD row rather than
     // through it.
-    camera.lookAt(0, -span * 0.04, 0);
+    camera.lookAt(centre[0], centre[1] - span * 0.04, centre[2]);
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(frame);
@@ -280,10 +320,11 @@ export async function createViewport(THREE, canvas, opts = {}) {
       if (!ray.ray.intersectPlane(dragPlane, planeHit)) return;
       const g = groups[st.held];
       const off = offsets[st.held];
+      const base = g.userData.base || [0, 0, 0];
       off.set(
-        planeHit.x + grip.x,
-        planeHit.y + grip.y - (g.userData.baseY || 0),
-        planeHit.z + grip.z,
+        planeHit.x + grip.x - base[0],
+        planeHit.y + grip.y - base[1],
+        planeHit.z + grip.z - base[2],
       );
       // Keep a flung part inside the room. Without this a part can be dragged
       // past the far clip and simply cease to exist, which reads as a crash.

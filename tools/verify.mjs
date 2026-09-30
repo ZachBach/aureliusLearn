@@ -109,7 +109,19 @@ try {
       motor_housing: 0.82, motor_stator: 0.35, motor_windings: 0.67,
       motor_drive_bearing: 0.13, motor_non_drive_bearing: 0.13,
       motor_drive_endbell: 0.13, motor_non_drive_endbell: 0.13, motor_fan: 0.13,
+      // PulseMask. Elliptical rings measure their bore across X, the short
+      // axis of the face; the visor pair is a rounded hexagon whose flats sit
+      // at the authored radius.
+      pm_foam: 1.16, pm_seal_bead: 1.21, pm_visor_gasket: 0.93,
+      pm_collar: 0.42, pm_reactor: 0.44, pm_status_band: 0.57,
+      pm_capsid_ring: 0.40, pm_filter: 0.30, pm_coalescer: 0.36,
+      pm_el_wire: 1.29,
     };
+    // Parts assembled AROUND the axis rather than on it — a ring of pucks, a
+    // field of plates, four anchor loops. They have no bore and no vertex on
+    // the axis either; what must hold is that nothing collapsed inward. The
+    // value is the least clearance the arrangement is authored to.
+    const OFF_AXIS = { pm_pzt_seal: 1.2, pm_scale_hood: 0.85, pm_pv_array: 1.2, pm_anchors: 1.3 };
 
     // Every authored module, not just the one that opens by default — the
     // second module's parts are otherwise never built during a check.
@@ -141,7 +153,9 @@ try {
         console.log(`  ok    ${info.steps} steps, every part in the stack`);
       }
 
-      if (code === 'MOTOR-01') {
+      // The two walkthrough modules: every authored step renders its title,
+      // and every knowledge check accepts its authored answer.
+      if (code === 'MOTOR-01' || code === 'PM-ASSY') {
         const walkthrough = await page.evaluate(() => {
           const { MODULES, state } = window.__learn;
           const module = MODULES.find((m) => m.code === state.moduleCode);
@@ -160,15 +174,15 @@ try {
           };
         });
         if (walkthrough.titles.some((title, i) => title !== walkthrough.expected[i])) {
-          fail('MOTOR-01: a walkthrough step did not render its authored title');
+          fail(`${code}: a walkthrough step did not render its authored title`);
         } else {
           console.log(`  ok    all ${walkthrough.titles.length} assembly steps render`);
         }
         if (walkthrough.checkCount !== 3 || walkthrough.correctIndex < 0) {
-          fail('MOTOR-01: expected three answerable knowledge checks');
+          fail(`${code}: expected three answerable knowledge checks`);
         } else {
-          const answersAccepted = await page.evaluate(() => {
-            const module = window.__learn.MODULES.find((m) => m.code === 'MOTOR-01');
+          const answersAccepted = await page.evaluate((c) => {
+            const module = window.__learn.MODULES.find((m) => m.code === c);
             const accepted = [];
             module.checks.forEach((check, i) => {
               const answer = check.answers.findIndex((item) => item.ok);
@@ -177,18 +191,26 @@ try {
               if (i < module.checks.length - 1) document.querySelector('.foot button.primary').click();
             });
             return accepted;
-          });
-          if (!answersAccepted.every(Boolean)) fail('MOTOR-01: a knowledge-check answer was not accepted');
+          }, code);
+          if (!answersAccepted.every(Boolean)) fail(`${code}: a knowledge-check answer was not accepted`);
           else console.log('  ok    all three knowledge checks accept their authored answers');
         }
+        // Answering the last check routes to Readiness; come back for the shots.
+        await page.evaluate((c) => window.__learn.openModule(c), code);
+        await sleep(400);
       }
 
       for (const s of info.stats) {
         const bore = BORES[s.key];
+        const clear = OFF_AXIS[s.key];
         if (!s.finite) fail(`${code} ${s.key}: non-finite bounds (a NaN in the profile)`);
         else if (s.tris < 100) fail(`${code} ${s.key}: only ${s.tris} triangles`);
         else if (!(s.height > 0.01)) fail(`${code} ${s.key}: zero height`);
-        else if (bore && Math.abs(s.minRadius - bore) > 0.01) {
+        else if (clear && s.minRadius < clear) {
+          fail(`${code} ${s.key}: off-axis assembly reaches in to ${s.minRadius.toFixed(3)}, authored clear of ${clear.toFixed(2)}`);
+        } else if (clear) {
+          console.log(`  ok    ${s.key.padEnd(10)} ${String(Math.round(s.tris)).padStart(6)} tris  h=${s.height.toFixed(3)}  r=${s.radius.toFixed(2)}  clear=${s.minRadius.toFixed(2)}`);
+        } else if (bore && Math.abs(s.minRadius - bore) > 0.01) {
           fail(`${code} ${s.key}: bore is ${s.minRadius.toFixed(3)}, authored at ${bore.toFixed(2)}`);
         } else if (!bore && s.minRadius > 0.01) {
           fail(`${code} ${s.key}: expected solid, but has a ${s.minRadius.toFixed(3)} hole`);
