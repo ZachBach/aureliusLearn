@@ -18,9 +18,19 @@ deploy. That is how these ended up here.
 | `Video Project.mp4` | 1920x1080, 1640 frames | take A — Train through Readiness, one pass |
 | `2026-09-08 14-05-22.mp4` | 1280x720, 2332 frames | take B — the re-record that added Library and Build |
 | `aurelius-learn-demo.mp4` | 1920x1080, 55s | the reel. Rebuild it with `node tools/video.mjs` |
+| `pm-assy-walkthrough-1920x1080.mp4` | 1920x1080, ~2 min | the PulseMask build walkthrough, every step and check. Rendered, not recorded: `node tools/render-module.mjs PM-ASSY` |
 
 If a take is missing, `tools/video.mjs` says which one and stops. It does not
 guess.
+
+## Rendered walkthroughs
+
+`tools/render-module.mjs` needs no take at all. It drives the app in headless
+Chrome on a real WebGPU adapter with the clock gated, steps the module's
+timeline, holds each step long enough to read with the camera drifting and
+the explode set to show the part in question, answers each knowledge check,
+and encodes the frames. Any authored module works: `node tools/render-module.mjs
+MOTOR-01`. Read its docblock before changing a hold time.
 
 ## The cut
 
